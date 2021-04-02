@@ -15,8 +15,15 @@ $longopts  = array(
 
 $options = getopt($shortopts, $longopts);
 
-$records = readCsvFile($options['file']);
+$dbhost = $options['h'];
+$dbuser = $options['u'];
+$dbpass = $options['p'];
 
+// $records = readCsvFile($options['file']);
+
+$conn = connectToDatabase($dbhost, $dbuser, $dbpass);
+createTable($conn);
+closeDatabase($conn);
 
 /**
  * Helper function to read CSV.
@@ -53,5 +60,33 @@ function readCsvFile($file) {
 
     return $records;
 }
+
+
+/**
+ * Helper function to connect to mysql db
+ */
+function connectToDatabase($dbhost, $dbuser, $dbpass) {
+
+    // Create connection
+    $conn = new mysqli($dbhost, $dbuser, $dbpass, 'catalyst');
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    echo "Connected successfully";
+
+    return $conn;
+
+}
+
+/**
+ * Helper function to close database connection.
+ */
+function closeDatabase($conn) {
+    mysqli_close($conn);
+}
+
 
 ?>
