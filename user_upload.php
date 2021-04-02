@@ -19,10 +19,11 @@ $dbhost = $options['h'];
 $dbuser = $options['u'];
 $dbpass = $options['p'];
 
-// $records = readCsvFile($options['file']);
+$records = readCsvFile($options['file']);
 
 $conn = connectToDatabase($dbhost, $dbuser, $dbpass);
-createTable($conn);
+createUserTable($conn);
+insertIntoUserTable($conn, $records);
 closeDatabase($conn);
 
 /**
@@ -75,7 +76,7 @@ function connectToDatabase($dbhost, $dbuser, $dbpass) {
         die("Connection failed: " . $conn->connect_error);
     }
 
-    echo "Connected successfully";
+    echo "Connected successfully/n";
 
     return $conn;
 
@@ -88,5 +89,50 @@ function closeDatabase($conn) {
     mysqli_close($conn);
 }
 
+/**
+ * Helper funciton to create table in DB.
+ */
+function createUserTable($conn) {
+
+    // SQL for creating user.
+    $sql = "CREATE TABLE users (
+        email VARCHAR(50) PRIMARY KEY,
+        surname VARCHAR(30) NOT NULL,
+        firstname VARCHAR(30) NOT NULL
+    )";
+
+    if (mysqli_query($conn, $sql)) {
+        echo "Table created successfully./n";
+    } else {
+        echo "ERROR: Could not able to execute $sql. " . mysqli_error($conn) .'/n';
+    }
+}
+
+/**
+ * Inserts records from CSV into user table
+ */
+function insertIntoUserTable($conn, $records) {
+    foreach ($records as $record) {
+        
+        // Validate Email.
+        $email = strtolower($record['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo "Invalid email format";
+            continue;
+        }
+        // Capatlise first letter.
+        $firstname = ucfirst(strtolower($record['name']));
+        $surname = ucfirst(strtolower($record['surname']));
+
+        $sql = "INSERT INTO users (email, firstname, surname)
+            VALUES ('" . $email . "', '" . $firstname . "', '" . $surname . "')";
+
+        if ($conn->query($sql) === TRUE) {
+            echo "New record created successfully/n";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
+    }
+}
 
 ?>
