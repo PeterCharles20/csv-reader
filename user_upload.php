@@ -95,7 +95,6 @@ function runScript($options) {
         insertIntoUserTable($conn, $records);
         closeDatabase($conn);
     }
-    exit(); 
 }
 
 /**
